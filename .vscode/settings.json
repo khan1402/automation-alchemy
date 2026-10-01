@@ -1,0 +1,6 @@
+{
+  // Save every file with Linux line endings (LF).
+  // Scripts saved with Windows endings (CRLF) break inside the VMs.
+  "files.eol": "\n"
+}
+
