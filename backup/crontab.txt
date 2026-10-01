@@ -1,0 +1,3 @@
+# Weekly full backup - every Sunday at 2:00 AM
+0 2 * * 0 devops /opt/backup/backup.sh >> /var/log/backup.log 2>&1
+
