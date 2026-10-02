@@ -48,6 +48,8 @@ if [[ "${GROUP}" == "cicd" ]]; then
 
   # Copy the playbooks out of /vagrant. The shared folder is world-writable,
   # and Ansible refuses to load ansible.cfg from a world-writable directory.
+  # (rsync only creates the LAST folder of a path, so create the parents first.)
+  mkdir -p "${USER_HOME}/automation-alchemy/ansible"
   rsync -r --delete /vagrant/ansible/ "${USER_HOME}/automation-alchemy/ansible/"
   chown -R "${USER_NAME}:${USER_NAME}" "${USER_HOME}/automation-alchemy"
   chmod -R u=rwX,go=rX "${USER_HOME}/automation-alchemy"

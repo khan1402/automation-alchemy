@@ -4,3 +4,4 @@ keys/
 *.log
 __pycache__/
 .DS_Store
+.vault_pass
