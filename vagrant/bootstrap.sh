@@ -35,16 +35,20 @@ visudo -cf /etc/sudoers.d/90-devops-bootstrap >/dev/null
 if [[ "${GROUP}" == "cicd" ]]; then
   APT="apt-get -o DPkg::Lock::Timeout=600 -y -q"
 
-  if ! command -v ansible-playbook >/dev/null 2>&1; then
+  # python3-passlib: lets Ansible create the hashed devops password.
+  if ! dpkg -s ansible python3-passlib >/dev/null 2>&1; then
     echo "==> [bootstrap] installing Ansible"
     export DEBIAN_FRONTEND=noninteractive
     add-apt-repository -y -n ppa:ansible/ansible >/dev/null
     $APT update >/dev/null
-    $APT install ansible >/dev/null
+    $APT install ansible python3-passlib >/dev/null
   fi
 
   # Private key: lets devops@cicd-server SSH into every other VM.
   install -m 600 -o "${USER_NAME}" -g "${USER_NAME}" /vagrant/keys/ansible_key "${USER_HOME}/.ssh/ansible_key"
+
+  # Vault password: lets Ansible decrypt vault.yml without asking.
+  install -m 600 -o "${USER_NAME}" -g "${USER_NAME}" /vagrant/.vault_pass "${USER_HOME}/.vault_pass"
 
   # Copy the playbooks out of /vagrant. The shared folder is world-writable,
   # and Ansible refuses to load ansible.cfg from a world-writable directory.

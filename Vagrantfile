@@ -38,6 +38,13 @@ unless File.exist?(KEY_PATH)
   abort "Could not generate SSH key with ssh-keygen. Is OpenSSH Client installed?" unless ok
 end
 
+# Ansible needs the vault password to decrypt secrets (devops password, ...).
+# Checked before creating any VM, but only for commands that provision.
+VAULT_PASS = File.join(ROOT, ".vault_pass")
+if (ARGV & ["up", "provision"]).any? && !File.exist?(VAULT_PASS)
+  abort ".vault_pass not found in #{ROOT}. Create it first (see README)."
+end
+
 # ---------------------------------------------------------------------------
 # 2. Read the VM list from the Ansible inventory (single source of truth).
 #    The inventory is a tree (all -> core -> webservers -> web-server-1),

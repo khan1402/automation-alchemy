@@ -1,0 +1,14 @@
+# Default values for the firewall role.
+
+# SSH is allowed only from your laptop and from cicd-server (Ansible/Jenkins).
+# cicd-server itself only needs SSH from your laptop.
+firewall_ssh_sources: >-
+  {{ [admin_ip]
+     + ([] if inventory_hostname in groups['cicd']
+        else [hostvars[groups['cicd'][0]]['ansible_host']]) }}
+
+# Extra rules per group, e.g. in group_vars/webservers/firewall.yml (Group 3):
+#   firewall_rules:
+#     - { port: 80, proto: tcp, from: 192.168.56.10, comment: "HTTP from load balancer" }
+firewall_rules: []
+

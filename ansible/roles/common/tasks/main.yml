@@ -9,6 +9,20 @@
     autoremove: true
     lock_timeout: 600        # wait if unattended-upgrades is holding the apt lock
 
+# A new kernel only takes effect after a reboot. cicd-server is skipped: it is
+# running this playbook, so rebooting it would cut off Ansible itself.
+- name: Check whether the updates need a reboot
+  ansible.builtin.stat:
+    path: /var/run/reboot-required
+  register: common_reboot_required
+
+- name: Reboot to load the new kernel
+  ansible.builtin.reboot:
+    reboot_timeout: 600
+  when:
+    - common_reboot_required.stat.exists
+    - inventory_hostname not in groups['cicd']
+
 - name: Install base packages
   ansible.builtin.apt:
     name: "{{ common_base_packages }}"
