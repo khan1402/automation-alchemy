@@ -1,10 +1,18 @@
 # Default values for the firewall role.
 
-# SSH is allowed only from your laptop and from cicd-server (Ansible/Jenkins).
-# cicd-server itself only needs SSH from your laptop.
+# SSH is allowed only from:
+#   - your laptop (admin_ip) on every VM
+#   - cicd-server on every other VM (Ansible / Jenkins log in from there)
+#   - Vagrant's NAT gateway 10.0.2.2 on cicd-server ONLY. Vagrant runs the
+#     one-click Ansible provisioner through this connection; without this rule,
+#     switching the firewall on would cut the provisioner off mid-run.
+#     (It is only reachable through a port bound to 127.0.0.1 on your laptop,
+#     and sshd still only accepts the devops user with a key.)
+firewall_vagrant_nat_gateway: 10.0.2.2
+
 firewall_ssh_sources: >-
   {{ [admin_ip]
-     + ([] if inventory_hostname in groups['cicd']
+     + ([firewall_vagrant_nat_gateway] if inventory_hostname in groups['cicd']
         else [hostvars[groups['cicd'][0]]['ansible_host']]) }}
 
 # Extra rules per group, e.g. in group_vars/webservers/firewall.yml (Group 3):
