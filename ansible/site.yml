@@ -1,0 +1,20 @@
+# site.yml - the FULL setup of the infrastructure.
+# Safe to run any number of times (idempotent): a second run reports changed=0.
+#
+#   Core only:        ansible-playbook site.yml
+#   Core + bonus VMs: ansible-playbook site.yml -e enable_bonus=true
+#
+# Grows group by group:
+#   Group 1: common               (updates, hostname, /etc/hosts, timezone)
+#   Group 2: hardening, firewall
+#   Group 3: docker, app deploy, load balancer
+#   Group 4: jenkins
+
+- name: Baseline for every VM
+  # 'core' = the 5 required VMs. Bonus VMs are added only when enabled,
+  # so Ansible never tries to reach a VM that was not created.
+  hosts: "core{{ ':backups' if enable_bonus | default(false) | bool else '' }}"
+  roles:
+    - common
+
+
