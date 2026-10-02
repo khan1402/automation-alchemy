@@ -1,0 +1,10 @@
+# group_vars/all/vars.yml - settings shared by EVERY host.
+# Secrets do NOT go here; they go in vault.yml (encrypted, added in Group 2).
+
+devops_user: devops
+timezone: Europe/Helsinki
+
+# Bonus features (backup VM, Fail2Ban, ...) are off by default.
+# The Vagrantfile turns them on with: -e enable_bonus=true
+enable_bonus: false
+
