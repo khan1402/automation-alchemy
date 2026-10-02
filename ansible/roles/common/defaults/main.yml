@@ -1,0 +1,10 @@
+# Default values for the common role (lowest priority - easy to override).
+
+common_base_packages:
+  - curl
+  - ca-certificates
+  - gnupg
+  - rsync
+
+
+
