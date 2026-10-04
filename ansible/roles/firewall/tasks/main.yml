@@ -27,14 +27,18 @@
     comment: SSH
   loop: "{{ firewall_ssh_sources }}"
 
+# One UFW rule per (port, source) pair: subelements turns
+#   {port: 3000, sources: [ip1, ip2]}  into  (3000, ip1), (3000, ip2)
 - name: Allow service ports for this VM
   community.general.ufw:
     rule: allow
-    port: "{{ item.port | string }}"
-    proto: "{{ item.proto | default('tcp') }}"
-    from_ip: "{{ item.from | default('any') }}"
-    comment: "{{ item.comment | default(omit) }}"
-  loop: "{{ firewall_rules }}"
+    port: "{{ item.0.port | string }}"
+    proto: "{{ item.0.proto | default('tcp') }}"
+    from_ip: "{{ item.1 }}"
+    comment: "{{ item.0.comment | default(omit) }}"
+  loop: "{{ firewall_rules | subelements('sources') }}"
+  loop_control:
+    label: "{{ item.0.port }} from {{ item.1 }}"
 
 - name: Log blocked connections
   community.general.ufw:

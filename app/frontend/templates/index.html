@@ -16,6 +16,7 @@
             </div>
         </header>
 
+        {% if data %}
         <div class="card">
             <h2>Backend Metrics</h2>
             <div class="metrics-grid">
@@ -56,10 +57,17 @@
                 </div>
             </div>
         </div>
+        {% else %}
+        <div class="card">
+            <h2>Backend Metrics</h2>
+            <p class="metric-label">{{ error }}</p>
+        </div>
+        {% endif %}
 
-        <footer>Infrastructure Insight — DevOps diagnostic dashboard</footer>
+        <footer>
+            Infrastructure Insight — DevOps diagnostic dashboard<br>
+            Frontend {{ frontend_version }} · Backend {{ data.version if data else "unavailable" }}
+        </footer>
     </div>
 </body>
 </html>
-
-

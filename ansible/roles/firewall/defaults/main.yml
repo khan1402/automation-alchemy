@@ -15,8 +15,10 @@ firewall_ssh_sources: >-
      + ([firewall_vagrant_nat_gateway] if inventory_hostname in groups['cicd']
         else [hostvars[groups['cicd'][0]]['ansible_host']]) }}
 
-# Extra rules per group, e.g. in group_vars/webservers/firewall.yml (Group 3):
+# Extra rules per group, set in group_vars/<group>/firewall.yml. Example:
 #   firewall_rules:
-#     - { port: 80, proto: tcp, from: 192.168.56.10, comment: "HTTP from load balancer" }
+#     - port: 80
+#       sources: ["192.168.56.10"]      # list of IPs, or ["any"]
+#       comment: HTTP from load balancer
 firewall_rules: []
 
