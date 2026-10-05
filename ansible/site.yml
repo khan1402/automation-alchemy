@@ -6,9 +6,21 @@
 #
 # Grows group by group:
 #   Group 1: common
-#   Group 2: hardening, firewall
+#   Group 2: hardening, firewall (cicd-server's firewall goes first, see below)
 #   Group 3: docker, image build, app deploy, load balancer
 #   Group 4: jenkins
+
+# Runs FIRST, before Ansible opens any SSH connection to the other VMs.
+# Why: when UFW switches on, the kernel starts tracking connections. A
+# connection opened BEFORE that is unknown to it, so the replies coming back
+# from the other VMs look like "new" inbound traffic and get blocked. Ansible
+# then waits forever. With the firewall already on here, every connection
+# Ansible opens is tracked from the start and its replies are let back in.
+- name: Firewall on the control node first
+  hosts: cicd
+  gather_facts: false
+  roles:
+    - firewall
 
 - name: Baseline and security for every VM
   # 'core' = the 5 required VMs. Bonus VMs are added only when enabled,
@@ -38,3 +50,4 @@
   roles:
     - loadbalancer
 
+  
