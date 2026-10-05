@@ -50,11 +50,14 @@ if [[ "${GROUP}" == "cicd" ]]; then
   # Vault password: lets Ansible decrypt vault.yml without asking.
   install -m 600 -o "${USER_NAME}" -g "${USER_NAME}" /vagrant/.vault_pass "${USER_HOME}/.vault_pass"
 
-  # Copy the playbooks out of /vagrant. The shared folder is world-writable,
-  # and Ansible refuses to load ansible.cfg from a world-writable directory.
+  # Copy the repo out of /vagrant (playbooks + app source for the first image
+  # build). The shared folder is world-writable, and Ansible refuses to load
+  # ansible.cfg from a world-writable directory. Secrets and keys stay behind.
   # (rsync only creates the LAST folder of a path, so create the parents first.)
-  mkdir -p "${USER_HOME}/automation-alchemy/ansible"
-  rsync -r --delete /vagrant/ansible/ "${USER_HOME}/automation-alchemy/ansible/"
+  mkdir -p "${USER_HOME}/automation-alchemy"
+  rsync -r --delete \
+    --exclude .git --exclude .vagrant --exclude keys --exclude .vault_pass \
+    /vagrant/ "${USER_HOME}/automation-alchemy/"
   chown -R "${USER_NAME}:${USER_NAME}" "${USER_HOME}/automation-alchemy"
   chmod -R u=rwX,go=rX "${USER_HOME}/automation-alchemy"
 fi

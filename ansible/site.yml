@@ -7,7 +7,7 @@
 # Grows group by group:
 #   Group 1: common
 #   Group 2: hardening, firewall
-#   Group 3: docker, app deploy, load balancer
+#   Group 3: docker, image build, app deploy, load balancer
 #   Group 4: jenkins
 
 - name: Baseline and security for every VM
@@ -19,5 +19,22 @@
     - hardening   # devops password + sudo, SSH, umask, auto-updates
     - firewall    # UFW: deny all, allow only what each VM needs
 
+- name: Container runtime
+  # cicd-server builds images; web + app servers run them.
+  hosts: webservers:appservers:cicd
+  roles:
+    - docker
 
-    
+- name: Build and push the initial app images
+  hosts: cicd
+  roles:
+    - image_build
+
+- name: Deploy the application
+  ansible.builtin.import_playbook: deploy.yml
+
+- name: Load balancer
+  hosts: loadbalancers
+  roles:
+    - loadbalancer
+

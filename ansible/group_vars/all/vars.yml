@@ -19,7 +19,7 @@ enable_bonus: false
 # --- Application (Group 3) ----------------------------------------------------
 # Images live on Docker Hub: <dockerhub_user>/alchemy-backend and -frontend.
 # The access token for pushing is vault_dockerhub_token in vault.yml.
-dockerhub_user: CHANGE-ME
+dockerhub_user: docker login -u zeek14
 
 app_images:
   backend: "{{ dockerhub_user }}/alchemy-backend"
