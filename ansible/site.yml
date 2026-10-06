@@ -8,7 +8,7 @@
 #   Group 1: common
 #   Group 2: hardening, firewall (cicd-server's firewall goes first, see below)
 #   Group 3: docker, image build, app deploy, load balancer
-#   Group 4: jenkins
+#   Group 4: jenkins (configured as code with JCasC)
 
 # Runs FIRST, before Ansible opens any SSH connection to the other VMs.
 # Why: when UFW switches on, the kernel starts tracking connections. A
@@ -50,4 +50,9 @@
   roles:
     - loadbalancer
 
-  
+# Last: the app is already live, now add the CI/CD server that updates it.
+- name: Jenkins CI/CD server
+  hosts: cicd
+  roles:
+    - jenkins
+
