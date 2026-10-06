@@ -27,4 +27,6 @@ def read_metrics():
 @app.get("/health")
 def health():
     """Cheap 'am I alive?' check used by Ansible after each deploy."""
-    return {"status": "broken", "version": APP_VERSION}
+    return {"status": "ok", "version": APP_VERSION}
+
+
