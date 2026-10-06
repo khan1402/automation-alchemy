@@ -4,4 +4,6 @@ __pycache__/
 .vscode/
 venv/
 .env
+# Tests run in the pipeline, they are not shipped in the image
+tests/
 

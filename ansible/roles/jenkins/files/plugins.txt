@@ -10,4 +10,5 @@ timestamper
 ws-cleanup
 ansicolor
 pipeline-graph-view
+junit
 
