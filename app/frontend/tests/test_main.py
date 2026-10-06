@@ -54,5 +54,3 @@ def test_page_returns_503_when_backend_is_down(monkeypatch):
     assert response.status_code == 503
     assert "Backend unreachable" in response.text
     assert "Backend unavailable" in response.text
-    
-    

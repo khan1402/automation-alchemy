@@ -49,5 +49,3 @@ def collect_all() -> dict:
         "cpu": get_cpu_info(),
         "memory": get_memory_info(),
     }
-    
-    

@@ -41,7 +41,7 @@ def home(request: Request):
     except httpx.HTTPError as exc:
         backend_data, error = None, f"Backend unreachable ({exc.__class__.__name__})"
 
-        return templates.TemplateResponse(
+    return templates.TemplateResponse(
         request,
         "index.html",
         {
@@ -52,5 +52,3 @@ def home(request: Request):
         },
         status_code=200 if backend_data else 503,
     )
-    
-    

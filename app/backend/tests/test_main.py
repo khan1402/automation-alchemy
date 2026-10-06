@@ -23,6 +23,3 @@ def test_metrics_endpoint_adds_the_version(monkeypatch):
 
     assert response.status_code == 200
     assert response.json() == {"hostname": "app-server", "version": "abc1234"}
-    
-    
-    

@@ -27,7 +27,3 @@ def test_collect_all_returns_every_section(monkeypatch):
     assert set(data) == {"hostname", "os", "cpu", "memory"}
     assert data["hostname"]
     assert data["memory"]["total_mb"] > 0
-    
-    
-    
-    
