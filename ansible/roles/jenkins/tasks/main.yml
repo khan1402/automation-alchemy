@@ -127,6 +127,17 @@
   no_log: true
   notify: Restart jenkins
 
+- name: Give Jenkins the Slack webhook (only when one is in the vault)
+  ansible.builtin.copy:
+    content: "{{ vault_slack_webhook_url }}"
+    dest: "{{ jenkins_secrets_dir }}/slack_webhook"
+    owner: jenkins
+    group: jenkins
+    mode: "0400"
+  when: vault_slack_webhook_url is defined
+  no_log: true
+  notify: Restart jenkins
+
 - name: Give Jenkins the git token (only when the repository is private)
   ansible.builtin.copy:
     content: "{{ vault_git_token }}"
@@ -194,6 +205,3 @@
   until: jenkins_job.status == 200
   retries: 12
   delay: 5
-
-
-  

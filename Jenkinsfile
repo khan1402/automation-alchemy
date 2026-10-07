@@ -1,7 +1,8 @@
 // Jenkinsfile - Automation Alchemy CI/CD pipeline.
 //
 // Jenkins checks GitHub every 2 minutes. For every new commit:
-//   1. Version      - the short commit ID becomes the image tag (e.g. 3f2a1bc)
+//   1. Version      - the short commit ID becomes the image tag (e.g. 3f2a1bc),
+//                     and the version users see right now is recorded (for rollback)
 //   2. Code checks  - lint (Ruff), code security (Bandit), unit tests (pytest)
 //   3. Build        - build the backend and frontend images
 //   4. Image scan   - Trivy: stop if an image has a CRITICAL fixable vulnerability
@@ -10,8 +11,8 @@
 //   7. Smoke test   - check through the load balancer that the new version is live
 //   8. Load test    - k6: 5 users for 20 s, fail on errors or slow pages
 //
-// Steps 2 and 4 are quality gates: if they fail, nothing is pushed or deployed.
-// Rollback + notifications (Group 7) are added later.
+// If anything fails AFTER the deploy started (6-8), the previous version is
+// deployed again automatically. Every result is posted to Slack (#deployments).
 
 pipeline {
     agent any
@@ -42,8 +43,11 @@ pipeline {
                     // Every image traces back to exactly one commit.
                     env.IMAGE_TAG = sh(script: 'git rev-parse --short=7 HEAD', returnStdout: true).trim()
                     currentBuild.displayName = "#${env.BUILD_NUMBER} ${env.IMAGE_TAG}"
+                    // What users see right now = what we roll back to if this deploy fails.
+                    env.PREVIOUS_TAG = sh(script: 'bash ci/live-version.sh "$LB_URL"', returnStdout: true).trim()
                 }
                 sh 'git log -1 --format="Commit %h by %an: %s"'
+                echo "Live version before this build: ${env.PREVIOUS_TAG ?: 'none (site not reachable)'}"
             }
         }
 
@@ -122,18 +126,11 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                withCredentials([
-                    sshUserPrivateKey(credentialsId: 'ansible-ssh-key', keyFileVariable: 'SSH_KEY'),
-                    file(credentialsId: 'ansible-vault-pass', variable: 'VAULT_PASS_FILE')
-                ]) {
-                    dir('ansible') {
-                        // Same deploy.yml as the first deploy - only the tag is new.
-                        sh '''
-                            export ANSIBLE_PRIVATE_KEY_FILE="$SSH_KEY"
-                            export ANSIBLE_VAULT_PASSWORD_FILE="$VAULT_PASS_FILE"
-                            ansible-playbook deploy.yml -e image_tag="$IMAGE_TAG"
-                        '''
-                    }
+                script {
+                    // From here on, a failure means the servers may run a broken
+                    // version -> the post section rolls back.
+                    env.DEPLOY_STARTED = 'true'
+                    deployVersion(env.IMAGE_TAG)
                 }
             }
         }
@@ -160,18 +157,70 @@ pipeline {
         always {
             // Unit test results -> "Tests" tab and trend graph in Jenkins.
             junit testResults: 'reports/*.xml', allowEmptyResults: true
+        }
+        success {
+            notifySlack('SUCCESS', "Version ${env.IMAGE_TAG} is live on http://localhost:8080")
+        }
+        failure {
+            script {
+                if (env.DEPLOY_STARTED != 'true') {
+                    // Failed in a quality gate or build step: production was never touched.
+                    notifySlack('BLOCKED', "Version ${env.IMAGE_TAG} failed before deploy. " +
+                                      "Users still see ${env.PREVIOUS_TAG ?: 'the previous version'}.")
+                } else if (!env.PREVIOUS_TAG) {
+                    notifySlack('ROLLBACK_FAILED', "Version ${env.IMAGE_TAG} failed after deploy and " +
+                                              "there is no known previous version to roll back to.")
+                } else {
+                    echo "=== ROLLBACK: deploying the previous version ${env.PREVIOUS_TAG} ==="
+                    try {
+                        deployVersion(env.PREVIOUS_TAG)
+                        sh 'bash scripts/smoke-test.sh "$LB_URL" "$PREVIOUS_TAG"'
+                        notifySlack('ROLLED_BACK', "Version ${env.IMAGE_TAG} failed after deploy. " +
+                                              "Rolled back to ${env.PREVIOUS_TAG} - users see a working site.")
+                    } catch (err) {
+                        notifySlack('ROLLBACK_FAILED', "Version ${env.IMAGE_TAG} failed AND the rollback to " +
+                                                  "${env.PREVIOUS_TAG} failed: ${err.getMessage()}")
+                    }
+                }
+            }
+        }
+        cleanup {
             // Don't leave Docker Hub login details on the CI server.
             sh 'docker logout || true'
             // Remove leftover image layers so the disk doesn't fill up over time.
             sh 'docker image prune -f'
         }
-        success {
-            echo "Version ${env.IMAGE_TAG} is live: http://localhost:8080"
-        }
-        failure {
-            echo "Pipeline FAILED - version ${env.IMAGE_TAG} is not (fully) deployed."
+    }
+}
+
+// --- Helpers ---------------------------------------------------------------
+
+// Deploy one version with the same deploy.yml as the very first deploy.
+def deployVersion(String tag) {
+    withCredentials([
+        sshUserPrivateKey(credentialsId: 'ansible-ssh-key', keyFileVariable: 'SSH_KEY'),
+        file(credentialsId: 'ansible-vault-pass', variable: 'VAULT_PASS_FILE')
+    ]) {
+        withEnv(["DEPLOY_TAG=${tag}"]) {
+            sh '''
+                export ANSIBLE_PRIVATE_KEY_FILE="$SSH_KEY"
+                export ANSIBLE_VAULT_PASSWORD_FILE="$VAULT_PASS_FILE"
+                cd ansible
+                ansible-playbook deploy.yml -e image_tag="$DEPLOY_TAG"
+            '''
         }
     }
 }
 
-
+// Post the result to Slack. A missing credential or a Slack outage never fails the build.
+def notifySlack(String status, String text) {
+    try {
+        withCredentials([string(credentialsId: 'slack-webhook', variable: 'SLACK_WEBHOOK_URL')]) {
+            withEnv(["NOTIFY_STATUS=${status}", "NOTIFY_TEXT=${text}"]) {
+                sh 'bash ci/notify.sh'
+            }
+        }
+    } catch (err) {
+        echo "Slack notification skipped: ${err.getMessage()}"
+    }
+}

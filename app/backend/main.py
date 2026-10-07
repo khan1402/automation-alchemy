@@ -28,5 +28,3 @@ def read_metrics():
 def health():
     """Cheap 'am I alive?' check used by Ansible after each deploy."""
     return {"status": "ok", "version": APP_VERSION}
-
-

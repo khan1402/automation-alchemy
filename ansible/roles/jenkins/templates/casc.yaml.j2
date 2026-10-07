@@ -51,6 +51,14 @@ credentials:
               description: "Ansible Vault password file"
               fileName: vault_pass
               secretBytes: "${readFileBase64:{{ jenkins_secrets_dir }}/vault_pass}"
+{% if vault_slack_webhook_url is defined %}
+          # Pipeline posts build results to Slack (#deployments) with this.
+          - string:
+              scope: GLOBAL
+              id: slack-webhook
+              description: "Slack incoming webhook - #deployments"
+              secret: "${readFile:{{ jenkins_secrets_dir }}/slack_webhook}"
+{% endif %}
 {% if vault_git_token is defined %}
           # Only needed when the Git repository is private.
           - usernamePassword:
@@ -61,8 +69,9 @@ credentials:
               password: "${readFile:{{ jenkins_secrets_dir }}/git_token}"
 {% endif %}
 
-# The pipeline job itself (Job DSL). The steps live in the Jenkinsfile in Git.
+# The jobs themselves (Job DSL). Their steps live in Jenkinsfiles in Git.
 jobs:
+  # Main pipeline: every new commit -> test, build, push, deploy (auto-rollback on failure).
   - script: |
       pipelineJob('{{ jenkins_job_name }}') {
         description('Builds, tests, pushes and deploys the app. Checks Git for new commits every 2 minutes.')
@@ -93,4 +102,28 @@ jobs:
           }
         }
       }
-
+  # Manual rollback: "Build with Parameters" -> deploy any earlier version.
+  - script: |
+      pipelineJob('{{ jenkins_job_name }}-rollback') {
+        description('Manual rollback: deploy an earlier version (commit ID) and check it is live.')
+        parameters {
+          stringParam('VERSION', '', 'Version to deploy: a 7-character commit ID, e.g. c551d65 (see the build names of {{ jenkins_job_name }}).')
+        }
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote {
+                  url('{{ jenkins_git_url }}')
+{% if vault_git_token is defined %}
+                  credentials('git-credentials')
+{% endif %}
+                }
+                branch('*/{{ jenkins_git_branch }}')
+              }
+            }
+            scriptPath('ci/Jenkinsfile.rollback')
+            lightweight(true)
+          }
+        }
+      }
