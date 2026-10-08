@@ -102,8 +102,19 @@ pipeline {
                                                   passwordVariable: 'DH_TOKEN')]) {
                     sh '''
                         echo "$DH_TOKEN" | docker login --username "$DH_USER" --password-stdin
+                        # Retry: one dropped connection to Docker Hub must not fail the build.
+                        # A push is safe to repeat - layers already uploaded are skipped.
                         for component in backend frontend; do
-                          docker push "$DOCKERHUB_USER/alchemy-$component:$IMAGE_TAG"
+                          image="$DOCKERHUB_USER/alchemy-$component:$IMAGE_TAG"
+                          for attempt in 1 2 3; do
+                            docker push "$image" && break
+                            if [ "$attempt" -eq 3 ]; then
+                              echo "Push of $image failed 3 times" >&2
+                              exit 1
+                            fi
+                            echo "Push of $image failed (attempt $attempt of 3), retrying in 15 s..."
+                            sleep 15
+                          done
                         done
                     '''
                 }

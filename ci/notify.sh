@@ -53,7 +53,8 @@ print(json.dumps({
 PY
 )"
 
-if curl -sS -m 10 -o /dev/null -w '%{http_code}' -X POST \
+# --retry: a short network or DNS hiccup gets 3 more tries, 5 s apart.
+if curl -sS -m 10 --retry 3 --retry-delay 5 --retry-all-errors -o /dev/null -w '%{http_code}' -X POST \
      -H 'Content-Type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL" | grep -q '^200$'; then
   echo "Slack notification sent: ${NOTIFY_STATUS:-}"
 else
