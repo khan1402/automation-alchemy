@@ -2,4 +2,3 @@
 
 # Where bootstrap.sh copied the repository on cicd-server.
 image_build_source: "{{ playbook_dir }}/../app"
-

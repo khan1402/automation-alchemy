@@ -47,6 +47,3 @@
 - name: Turn the firewall on
   community.general.ufw:
     state: enabled
-
-
-    

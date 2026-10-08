@@ -9,5 +9,3 @@ app_deploy_settings:
     port: 80
     env:
       BACKEND_URL: "{{ app_backend_url }}"
-
-      

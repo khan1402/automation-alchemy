@@ -55,6 +55,3 @@
 - name: Set timezone
   community.general.timezone:
     name: "{{ timezone }}"
-
-
-    

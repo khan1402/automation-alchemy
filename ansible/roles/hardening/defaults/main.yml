@@ -8,6 +8,3 @@ hardening_umask: "027"
 hardening_locked_users:
   - vagrant
   - ubuntu
-
-
-  

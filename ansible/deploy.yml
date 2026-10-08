@@ -21,4 +21,3 @@
     - role: app_deploy
       vars:
         app_deploy_component: frontend
-

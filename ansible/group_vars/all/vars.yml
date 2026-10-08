@@ -30,4 +30,3 @@ app_initial_tag: initial
 
 # The frontend calls the backend here (first host in 'appservers').
 app_backend_url: "http://{{ hostvars[groups['appservers'][0]]['ansible_host'] }}:3000"
-

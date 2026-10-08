@@ -11,5 +11,3 @@ jenkins_poll_schedule: "H/2 * * * *"
 
 # Only used when the repository is private (then add vault_git_token to vault.yml).
 jenkins_git_user: khan1402
-
-

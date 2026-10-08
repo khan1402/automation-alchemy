@@ -4,4 +4,3 @@ firewall_rules:
   - port: 3000
     sources: "{{ groups['webservers'] | map('extract', hostvars, 'ansible_host') | list }}"
     comment: API from web servers
-

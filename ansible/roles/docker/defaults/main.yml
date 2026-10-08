@@ -10,4 +10,3 @@ docker_packages:
 
 # x86_64 (what Ansible reports) -> amd64 (what Docker's apt repo calls it)
 docker_apt_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
-

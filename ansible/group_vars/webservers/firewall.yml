@@ -3,6 +3,3 @@ firewall_rules:
   - port: 80
     sources: "{{ groups['loadbalancers'] | map('extract', hostvars, 'ansible_host') | list }}"
     comment: HTTP from load balancer
-
-
-    

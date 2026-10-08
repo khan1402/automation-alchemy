@@ -4,5 +4,3 @@ firewall_rules:
   - port: 8080
     sources: ["{{ admin_ip }}"]
     comment: Jenkins UI from admin laptop
-
-    

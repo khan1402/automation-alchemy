@@ -5,6 +5,3 @@ common_base_packages:
   - ca-certificates
   - gnupg
   - rsync
-
-
-

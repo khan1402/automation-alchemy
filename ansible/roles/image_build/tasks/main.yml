@@ -42,5 +42,3 @@
   loop_control:
     label: "{{ item.item }}"
   when: item.images | length == 0
-
-  

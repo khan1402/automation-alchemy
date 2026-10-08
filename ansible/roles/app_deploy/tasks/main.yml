@@ -39,6 +39,3 @@
   until: app_deploy_health.status == 200
   retries: 15
   delay: 2
-
-
-  
