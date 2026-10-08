@@ -9,6 +9,7 @@
 #   Group 2: hardening, firewall (cicd-server's firewall goes first, see below)
 #   Group 3: docker, image build, app deploy, load balancer
 #   Group 4: jenkins (configured as code with JCasC)
+#   Group 9: bonus - fail2ban, backup server (only with -e enable_bonus=true)
 
 # Runs FIRST, before Ansible opens any SSH connection to the other VMs.
 # Why: when UFW switches on, the kernel starts tracking connections. A
@@ -56,3 +57,28 @@
   roles:
     - jenkins
 
+# --- Bonus (only with -e enable_bonus=true) ------------------------------------
+# Without the flag these plays match no hosts and are skipped.
+
+- name: "Bonus: Fail2Ban on every VM"
+  hosts: "{{ 'core:backups' if enable_bonus | default(false) | bool else '!all' }}"
+  roles:
+    - fail2ban
+
+- name: "Bonus: backup server (key, script, daily timer)"
+  hosts: "{{ 'backups' if enable_bonus | default(false) | bool else '!all' }}"
+  roles:
+    - backup_server
+
+- name: "Bonus: let the backup server pull from every core VM"
+  hosts: "{{ 'core' if enable_bonus | default(false) | bool else '!all' }}"
+  roles:
+    - backup_source
+
+- name: "Bonus: first backup"
+  hosts: "{{ 'backups' if enable_bonus | default(false) | bool else '!all' }}"
+  tasks:
+    - name: Take the first backup and check it
+      ansible.builtin.include_role:
+        name: backup_server
+        tasks_from: first_backup

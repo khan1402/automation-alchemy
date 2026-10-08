@@ -20,4 +20,3 @@ ENV APP_VERSION=${APP_VERSION}
 
 # Command that runs when the container starts
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
-

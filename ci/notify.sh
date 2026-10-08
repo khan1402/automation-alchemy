@@ -5,6 +5,7 @@
 #
 # NOTIFY_STATUS: SUCCESS | BLOCKED | ROLLED_BACK | MANUAL_ROLLBACK | ROLLBACK_FAILED
 # Needs SLACK_WEBHOOK_URL - Jenkins provides it from the 'slack-webhook' credential.
+# Optional NOTIFY_COMMIT_LABEL renames the "Commit" field (the rollback job uses it).
 #
 # Never fails the build: a Slack outage must not break a deployment.
 set -uo pipefail
@@ -44,7 +45,7 @@ print(json.dumps({
         "fields": [
             {"title": "Build", "value": build, "short": True},
             {"title": "Version", "value": env("IMAGE_TAG", "-") or "-", "short": True},
-            {"title": "Commit", "value": esc(env("NOTIFY_COMMIT", "")), "short": False},
+            {"title": env("NOTIFY_COMMIT_LABEL", "Commit"), "value": esc(env("NOTIFY_COMMIT", "")), "short": False},
         ],
         "footer": "Jenkins - Automation Alchemy",
     }],

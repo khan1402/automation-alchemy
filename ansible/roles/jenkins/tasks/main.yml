@@ -193,15 +193,56 @@
   retries: 60
   delay: 5
 
-# Proves JCasC worked: the admin login works AND the job exists.
-- name: Check that the admin can log in and the pipeline job exists
+# Proves JCasC worked: the admin can log in AND every job exists.
+# Seen once: after a restart Jenkins skipped creating a NEW job from casc.yaml.
+# If any job is missing, re-apply the configuration (same as clicking
+# "Reload existing configuration") and check again - no manual step needed.
+- name: Check that the admin can log in and every job exists
   ansible.builtin.uri:
-    url: "http://127.0.0.1:{{ jenkins_port }}/job/{{ jenkins_job_name }}/api/json"
+    url: "http://127.0.0.1:{{ jenkins_port }}/job/{{ item }}/api/json"
+    user: "{{ jenkins_admin_user }}"
+    password: "{{ vault_jenkins_admin_password }}"
+    force_basic_auth: true
+    status_code: [200, 404]
+  loop: "{{ jenkins_jobs }}"
+  register: jenkins_job_check
+
+- name: Re-apply the JCasC configuration when a job is missing
+  when: jenkins_job_check.results | selectattr('status', 'equalto', 404) | list | length > 0
+  block:
+    # Jenkins blocks POST requests without a CSRF token ("crumb"),
+    # and the crumb only works together with its session cookie.
+    - name: Get a CSRF token for the reload request
+      ansible.builtin.uri:
+        url: "http://127.0.0.1:{{ jenkins_port }}/crumbIssuer/api/json"
+        user: "{{ jenkins_admin_user }}"
+        password: "{{ vault_jenkins_admin_password }}"
+        force_basic_auth: true
+        return_content: true
+      register: jenkins_crumb
+
+    - name: Reload the configuration as code
+      ansible.builtin.uri:
+        url: "http://127.0.0.1:{{ jenkins_port }}/configuration-as-code/reload"
+        method: POST
+        user: "{{ jenkins_admin_user }}"
+        password: "{{ vault_jenkins_admin_password }}"
+        force_basic_auth: true
+        headers:
+          Jenkins-Crumb: "{{ jenkins_crumb.json.crumb }}"
+          Cookie: "{{ jenkins_crumb.cookies_string }}"
+        status_code: [200, 302]
+      changed_when: true
+
+- name: Every job exists now
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ jenkins_port }}/job/{{ item }}/api/json"
     user: "{{ jenkins_admin_user }}"
     password: "{{ vault_jenkins_admin_password }}"
     force_basic_auth: true
     status_code: 200
-  register: jenkins_job
-  until: jenkins_job.status == 200
+  loop: "{{ jenkins_jobs }}"
+  register: jenkins_job_final
+  until: jenkins_job_final.status == 200
   retries: 12
   delay: 5

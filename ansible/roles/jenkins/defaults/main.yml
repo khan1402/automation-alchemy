@@ -25,5 +25,7 @@ jenkins_plugin_manager_url: >-
 jenkins_secrets_dir: "{{ jenkins_home }}/casc_secrets"
 
 jenkins_admin_user: admin
-
-
+# Every job casc.yaml creates - checked after each start (see tasks/main.yml).
+jenkins_jobs:
+  - "{{ jenkins_job_name }}"
+  - "{{ jenkins_job_name }}-rollback"

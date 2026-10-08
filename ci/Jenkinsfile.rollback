@@ -71,7 +71,8 @@ pipeline {
 def notifySlack(String status, String text) {
     try {
         withCredentials([string(credentialsId: 'slack-webhook', variable: 'SLACK_WEBHOOK_URL')]) {
-            withEnv(["NOTIFY_STATUS=${status}", "NOTIFY_TEXT=${text}"]) {
+            // The checked-out commit is only the pipeline code, not the deployed version.
+            withEnv(["NOTIFY_STATUS=${status}", "NOTIFY_TEXT=${text}", "NOTIFY_COMMIT_LABEL=Pipeline code from"]) {
                 sh 'bash ci/notify.sh'
             }
         }
