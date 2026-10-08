@@ -44,8 +44,10 @@ check "firewall (UFW) is active"              grep -q 'Status: active' <<<"$stat
 check "firewall opens only ports: $want (open: ${open:-none})" test "$open" = "$want"
 
 # --- Updates ----------------------------------------------------------------------
-pending="$(apt-get -s upgrade 2>/dev/null | grep -c '^Inst')"
-check "no pending package updates ($pending pending)" test "$pending" -eq 0
+# Security updates are what matters (and what unattended-upgrades installs daily).
+# Other repos (e.g. Docker) release new versions at any time - not a failure.
+pending="$(apt-get -s upgrade 2>/dev/null | grep '^Inst' | grep -c -- '-security')"
+check "no pending security updates ($pending pending)" test "$pending" -eq 0
 
 # --- Services for this server's role ----------------------------------------------
 case "$ROLE" in

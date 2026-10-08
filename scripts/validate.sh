@@ -61,9 +61,14 @@ for entry in "${HOSTS[@]}"; do
     [[ "$other_name" != "$name" ]] && peers+=("$other_name")
   done
 
+  errors="$(mktemp)"
   output="$("${SSH[@]}" "devops@$ip" "bash -s -- $(role_of "$name") $name $ip $BONUS ${peers[*]}" \
-             < scripts/remote-checks.sh 2>/dev/null)"
-  if [[ -z "$output" ]]; then fail "devops can log in with the SSH key"; continue; fi
+             < scripts/remote-checks.sh 2>"$errors")"
+  if [[ -z "$output" ]]; then
+    fail "devops can log in with the SSH key ($(head -n 1 "$errors" | tr -d '\r'))"
+    rm -f "$errors"; continue
+  fi
+  rm -f "$errors"
   pass "devops can log in with the SSH key"
   while read -r result text; do
     [[ "$result" == "PASS" ]] && pass "$text"

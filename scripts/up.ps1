@@ -92,4 +92,5 @@ Write-Host ""
 Write-Host "Ready in $minutes minutes." -ForegroundColor Green
 Write-Host "  App:       http://localhost:8080   (or http://192.168.56.10)"
 Write-Host "  Jenkins:   http://192.168.56.14:8080"
-Write-Host "  Validate:  bash scripts/validate.sh   (in Git Bash)"
+$validateCmd = if ($Bonus) { "bash scripts/validate.sh --bonus" } else { "bash scripts/validate.sh" }
+Write-Host "  Validate:  $validateCmd   (in Git Bash)"

@@ -24,6 +24,8 @@
   ansible.builtin.apt_repository:
     repo: deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/
     filename: jenkins
+    # umask 0027 would make it root-only; 0644 lets any user run apt read-only.
+    mode: "0644"
     state: present
 
 # Written BEFORE the package, so Jenkins never starts with the setup wizard.
