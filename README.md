@@ -162,6 +162,7 @@ ansible-vault edit ansible/group_vars/all/vault.yml --vault-password-file .vault
 | Feature | How | Check |
 |---|---|---|
 | Backup server | Pull model: backup-server pulls a `tar.gz` of `/etc` (+ Jenkins home) from every VM daily at 02:00 (systemd timer), keeps 7 days. Its key can run **only** the export command (`command=…,restrict`). | `ls /srv/backups/*` on backup-server |
+| Restore | Copy an archive to the VM and unpack only what you need, e.g. `sudo tar -xzf web-server-1-<date>.tar.gz -C / etc/nginx` | `tar -tzf <archive>` lists the contents |
 | Fail2Ban | SSH jail on every VM, bans via UFW (5 failures / 10 min → 10 min ban). The admin laptop is whitelisted. | `sudo fail2ban-client status sshd` |
 | GitHub Actions | lint + security + unit tests, `ansible-lint` (production profile), `shellcheck` on every push | GitHub → *Actions* tab |
 | Automatic rollback | see the pipeline section | Slack ↩️ |
