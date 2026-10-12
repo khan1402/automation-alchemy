@@ -63,4 +63,3 @@ if [[ "${GROUP}" == "cicd" ]]; then
 fi
 
 echo "==> [bootstrap] done"
-
