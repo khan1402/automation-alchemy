@@ -18,7 +18,7 @@ flowchart LR
     end
 
     hub[("Docker Hub")]
-    gh[("GitHub")]
+    gh[("Gitea")]
     slack(["Slack"])
 
     browser -- "8080 -> 80" --> lb
@@ -68,7 +68,7 @@ sequenceDiagram
     A->>VMs: patches, hardening, firewall (all VMs)
     A->>VMs: Docker, first images, app deploy, nginx
     A->>C: Jenkins with JCasC (credentials + 2 jobs)
-    C-->>You: Jenkins polls GitHub and deploys the newest commit
+    C-->>You: Jenkins polls Gitea and deploys the newest commit
 ```
 
 **One source of truth.** `ansible/inventory/hosts.yml` lists every VM with its IP, RAM
@@ -104,7 +104,7 @@ backend first, then the web servers with `serial: 1`.
 
 ```mermaid
 flowchart TD
-    commit(["git push to GitHub"]) --> poll["Jenkins polls every 2 min"]
+    commit(["git push to Gitea"]) --> poll["Jenkins polls every minute"]
     poll --> s1["1. Version<br/>tag = short commit ID<br/>record live version"]
     s1 --> s2["2. Code checks<br/>Ruff, Bandit, pytest"]
     s2 --> s3["3. Build images"]

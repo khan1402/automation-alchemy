@@ -92,7 +92,7 @@ What `up.ps1 -Fresh` does:
    (and, on cicd-server, installs Ansible) — the only shell provisioning in the project.
 3. cicd-server is created **last** and runs `ansible/site.yml`, which configures **all** VMs:
    patches → hardening → firewall → Docker → first image build → app deploy → load balancer → Jenkins.
-4. Jenkins starts already configured (credentials + both jobs), polls GitHub, and deploys the
+4. Jenkins starts already configured (credentials + both jobs), polls Gitea, and deploys the
    newest commit by itself.
 
 ## 5. Check it
@@ -118,7 +118,7 @@ cd ~/automation-alchemy/ansible && ansible-playbook site.yml
 
 ## 6. The pipeline
 
-Jenkins checks GitHub (`khan1402/automation-alchemy`) every 2 minutes. For each new commit:
+Jenkins checks Gitea (`zeeshankhan/automation-alchemy`) every minute. For each new commit:
 
 | # | Stage | Fails the build when |
 |---|---|---|

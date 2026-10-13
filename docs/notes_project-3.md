@@ -21,7 +21,7 @@ each problem was fixed. For the overview see the [README](../README.md); for dia
 | **Jenkins 100 % as code** (JCasC + Job DSL) | A rebuilt Jenkins is identical. Clicked changes would be lost and can't be reviewed. |
 | **Pipeline tools run as throwaway containers** (Python, Trivy, k6) | Nothing extra is installed on the CI server, and versions are the same on every run. |
 | **Trivy gate: CRITICAL with a fix available** | Unfixable CVEs would block every build with nothing to do about them. HIGH is reported, not blocking. |
-| **Polling GitHub every 2 min** instead of a webhook | The VMs are on a private network that GitHub can't reach. |
+| **Polling Gitea every minute** instead of a webhook | The VMs are on a private network that Gitea can't reach. GitHub is only a mirror for GitHub Actions. |
 | **Backups: pull, not push** | Only the backup server holds a key, and that key can run one command. A hacked server can't touch the backups. |
 | **Fail2Ban whitelists the admin IP** | The validation script makes failed logins on purpose (it proves root and password logins are refused). |
 
@@ -85,7 +85,7 @@ Each one happened for real during the build. They're listed in order.
 
 ### 13. Gitea push fails on the first try
 - **Problem:** pushing to the school Gitea often fails authentication once, then works on retry.
-- **Fix:** retry the push, or use a Gitea personal access token. Jenkins only watches GitHub, so the pipeline isn't affected.
+- **Fix:** retry the push, or use a Gitea personal access token. Jenkins reads Gitea with its own read-only token, so the pipeline isn't affected.
 
 ## 3. Tested results
 

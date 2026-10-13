@@ -74,7 +74,7 @@ jobs:
   # Main pipeline: every new commit -> test, build, push, deploy (auto-rollback on failure).
   - script: |
       pipelineJob('{{ jenkins_job_name }}') {
-        description('Builds, tests, pushes and deploys the app. Checks Git for new commits every 2 minutes.')
+        description('Builds, tests, pushes and deploys the app. Checks Git for new commits every minute.')
         properties {
           pipelineTriggers {
             triggers {

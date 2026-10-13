@@ -1,6 +1,6 @@
 // Jenkinsfile - Automation Alchemy CI/CD pipeline.
 //
-// Jenkins checks GitHub every 2 minutes. For every new commit:
+// Jenkins checks Gitea every minute. For every new commit:
 //   1. Version      - the short commit ID becomes the image tag (e.g. 3f2a1bc),
 //                     and the version users see right now is recorded (for rollback)
 //   2. Code checks  - lint (Ruff), code security (Bandit), unit tests (pytest)

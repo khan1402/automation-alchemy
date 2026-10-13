@@ -6,7 +6,7 @@ jenkins_git_url: https://gitea.kood.tech/zeeshankhan/automation-alchemy.git
 jenkins_git_branch: main
 
 # "Track changes in Git": check for new commits every 1 minute.
-# (Polling, not a webhook: GitHub cannot reach a VM on a private network.)
+# (Polling, not a webhook: Gitea cannot reach a VM on a private network.)
 jenkins_poll_schedule: "* * * * *"
 
 # Only used when the repository is private (then add vault_git_token to vault.yml).
