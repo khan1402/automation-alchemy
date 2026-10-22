@@ -1,13 +1,10 @@
 # Automation Alchemy
-
-Kood/Sisu DevOps — Project 3. Author: Zeeshan Khan.
-
 Projects 1 and 2 built a 5-VM infrastructure by hand (shell scripts, manual steps).
 This project rebuilds **all of it as code**, and adds a CI/CD server whose pipeline
-tests, builds, publishes and deploys every Git commit — and rolls back on its own
+tests, builds, publishes and deploys every Git commit and rolls back on its own
 when a deploy goes wrong.
 
-**One command builds everything from an empty laptop. No manual steps.**
+**One command builds everything from an empty laptop no manual steps.**
 
 ```powershell
 .\scripts\up.ps1 -Fresh
@@ -108,7 +105,7 @@ From the laptop it proves that root and password logins are refused, the app ans
 through the load balancer, requests are spread over both web servers, and the web/app
 servers can **not** be reached directly.
 
-Idempotency — run the full setup again; the second run reports `changed=0`
+Idempotency run the full setup again; the second run reports `changed=0`
 (only new Ubuntu patches can show up as changes):
 
 ```bash
@@ -118,7 +115,7 @@ cd ~/automation-alchemy/ansible && ansible-playbook site.yml
 
 ## 6. The pipeline
 
-Jenkins checks Gitea (`zeeshankhan/automation-alchemy`) every minute. For each new commit:
+Jenkins checks Gitea every minute. For each new commit:
 
 | # | Stage | Fails the build when |
 |---|---|---|
