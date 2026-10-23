@@ -1,5 +1,4 @@
 # Automation Alchemy
-Projects 1 and 2 built a 5-VM infrastructure by hand (shell scripts, manual steps).
 This project rebuilds **all of it as code**, and adds a CI/CD server whose pipeline
 tests, builds, publishes and deploys every Git commit and rolls back on its own
 when a deploy goes wrong.
